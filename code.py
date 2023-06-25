@@ -11,6 +11,7 @@ class NaiveBayes:
         self.dataset_len = len(dataset)
         for i in range(len(dataset)):
             class_name = dataset[i][-1]
+            dataset[i]
             if class_name in self.total_by_class:
                 self.total_by_class[class_name] += 1
             else:
@@ -23,21 +24,31 @@ class NaiveBayes:
                     self.compressed_dataset[class_name][(j,dataset[i][j])] += 1
                 else:
                     self.compressed_dataset[class_name][(j,dataset[i][j])] = 1
-                
 
-    def get_class_for_data(self, data):
-        max_prob = 0
-        max_class = ''
-        print(self.compressed_dataset)
+    def get_class_for_data_in_out(self, data):
+        expected_class_name = data[-1]
+        self.total_by_class[expected_class_name] -= 1
+        for j in range(len(data) - 1):
+            self.compressed_dataset[expected_class_name][(j,data[j])] -= 1
+
+        max_prob = -1
+        class_founded = ''
         for class_name in self.total_by_class:
             prob = self.total_by_class[class_name] / self.dataset_len
-            for i in range(len(data)):
-                prob *= self.compressed_dataset[class_name][(i, data[i])] / self.total_by_class[class_name]
+            for i in range(len(data) - 1):
+                if (i, data[i]) not in self.compressed_dataset[class_name]:
+                    prob *= 0
+                else:
+                    prob *= self.compressed_dataset[class_name][(i, data[i])] / self.total_by_class[class_name]
             if prob > max_prob:
                 max_prob = prob
-                max_class = class_name
+                class_founded = class_name
 
-        return max_class
+        self.total_by_class[expected_class_name] += 1
+        for j in range(len(data) - 1):
+            self.compressed_dataset[expected_class_name][(j,data[j])] += 1
+
+        return class_founded
 
 class SmsDatasetProcessor:
     processed_dataset = []
@@ -45,7 +56,7 @@ class SmsDatasetProcessor:
     key_words = []
     stopwords = []
     def __init__(self, dataset):
-        self.attributes = ["text_length", "number_of_words", "number_of_capital_letters", "number_of_numbers", "number_of_simbols", "sentiment_analysis", "number_of_key_words"]
+        self.attributes = ["text_length", "number_of_words", "number_of_capital_letters", "number_of_numbers", "number_of_simbols", "number_of_key_words", "sentiment_analysis"]
         self.stopwords = nltk.corpus.stopwords.words('english')
         spam_words_count = {}
         for data in dataset:
@@ -63,6 +74,8 @@ class SmsDatasetProcessor:
         for data in dataset:
             self.__add_sms_text(data[0], data[1])
 
+        self.__normalize_dataset()
+
     def __add_sms_text(self, class_name, sms_text):
         self.processed_dataset.append([])
         idx = len(self.processed_dataset) - 1
@@ -77,10 +90,10 @@ class SmsDatasetProcessor:
                 self.processed_dataset[idx].append(self.__get_number_of_numbers(sms_text))
             elif attribute == "number_of_simbols":
                 self.processed_dataset[idx].append(self.__get_number_of_simbols(sms_text))
-            elif attribute == "sentiment_analysis":
-                self.processed_dataset[idx].append(self.__analyze_sentiment(sms_text))
             elif attribute == "number_of_key_words":
                 self.processed_dataset[idx].append(self.__get_number_of_key_words(sms_text))
+            elif attribute == "sentiment_analysis":
+                self.processed_dataset[idx].append(self.__analyze_sentiment(sms_text))
         self.processed_dataset[idx].append(class_name)
 
     def __get_number_of_capital_letters(self, sms_text):
@@ -98,6 +111,7 @@ class SmsDatasetProcessor:
     def __tokenize_and_remove_stopwords(self, sms_text):
         frase = sms_text.lower()
         tokens = nltk.word_tokenize(frase)
+        tokens = [token for token in tokens if token not in self.stopwords]
 
         return tokens
 
@@ -118,6 +132,24 @@ class SmsDatasetProcessor:
         tokens = self.__tokenize_and_remove_stopwords(sms_text)
         return sum(token in self.key_words for token in tokens)
 
+    def __classify_attribute_in_large_medium_or_small(self, idx):
+        values = sorted(list(set([self.processed_dataset[i][idx] for i in range(len(self.processed_dataset))])))
+        # get three range of values
+        first_range = [0, values[len(values) // 3]]
+        second_range = [values[len(values) // 3], values[2 * len(values) // 3]]
+        third_range = [values[2 * len(values) // 3], values[-1]]
+        # classify each value
+        for i in range(len(self.processed_dataset)):
+            if self.processed_dataset[i][idx] in range(first_range[0], first_range[1]):
+                self.processed_dataset[i][idx] = 'small'
+            elif self.processed_dataset[i][idx] in range(second_range[0], second_range[1]):
+                self.processed_dataset[i][idx] = 'medium'
+            else:
+                self.processed_dataset[i][idx] = 'large'
+
+    def __normalize_dataset(self):
+        for i in range(len(self.attributes) - 1):
+            self.__classify_attribute_in_large_medium_or_small(i)
 
 # read lines untill EOF
 dataset = []
@@ -133,3 +165,29 @@ while True:
 # process dataset
 processor = SmsDatasetProcessor(dataset)
 
+# train naive bayes
+naive_bayes = NaiveBayes(processor.processed_dataset)
+
+right = 0
+wrong = 0
+false_spam = 0
+false_ham = 0
+for data in processor.processed_dataset:
+    class_founded = naive_bayes.get_class_for_data_in_out(data)
+    class_name = data[-1]
+    if class_founded == class_name:
+        right += 1
+    else:
+        if class_name == 'spam':
+            false_spam += 1
+        else:
+            false_ham += 1
+        wrong += 1
+        
+print("total: ", right + wrong)
+print("right: ", right)
+print("wrong: ", wrong)
+print("false spam: ", false_spam)
+print("false ham: ", false_ham)
+print("accuracy: ", right / (right + wrong))
+print("accuracy: ", "{:.2f}".format(right / (right + wrong) * 100), "%")
