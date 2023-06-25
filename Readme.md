@@ -54,7 +54,7 @@ Caso não queira rodar em um ambiente virtual use apenas o último comando.
 Para executar o código basta utilizar o comando:
 
 ```
-python3 code.py <dataset
+python3 main.py <dataset
 ```
 
 Será necessário um arquivo chamado dataset na raiz do repositório, é esperado que esse arquivo esteja no formato em que cada linha siga o padrão:
