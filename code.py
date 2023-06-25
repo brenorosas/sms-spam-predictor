@@ -59,11 +59,20 @@ class NaiveBayes:
         for j in range(len(data) - 1):
             self.compressed_dataset[expected_class_name][(j,data[j])] -= 1
 
+        class_founded = self.get_class_for_data(data[:-1])
+
+        self.total_by_class[expected_class_name] += 1
+        for j in range(len(data) - 1):
+            self.compressed_dataset[expected_class_name][(j,data[j])] += 1
+
+        return class_founded
+    
+    def get_class_for_data(self, data):
         max_prob = -1
         class_founded = ''
         for class_name in self.total_by_class:
             prob = self.total_by_class[class_name] / self.dataset_len
-            for i in range(len(data) - 1):
+            for i in range(len(data)):
                 if (i, data[i]) not in self.compressed_dataset[class_name]:
                     prob *= 0
                 else:
@@ -71,11 +80,7 @@ class NaiveBayes:
             if prob > max_prob:
                 max_prob = prob
                 class_founded = class_name
-
-        self.total_by_class[expected_class_name] += 1
-        for j in range(len(data) - 1):
-            self.compressed_dataset[expected_class_name][(j,data[j])] += 1
-
+        
         return class_founded
 
 class SmsDatasetProcessor:
