@@ -7,7 +7,9 @@ class NaiveBayes:
     compressed_dataset = {}
     dataset_len = 0
     total_by_class = {}
+    dataset = []
     def __init__(self, dataset):
+        self.dataset = dataset
         self.dataset_len = len(dataset)
         for i in range(len(dataset)):
             class_name = dataset[i][-1]
@@ -25,7 +27,33 @@ class NaiveBayes:
                 else:
                     self.compressed_dataset[class_name][(j,dataset[i][j])] = 1
 
-    def get_class_for_data_in_out(self, data):
+    def get_accuracy(self):
+        right = 0
+        wrong = 0
+        false_spam = 0
+        false_ham = 0
+        for data in self.dataset:
+            class_founded = self.__get_class_for_data_in_out(data)
+            class_name = data[-1]
+            if class_founded == class_name:
+                right += 1
+            else:
+                if class_name == 'spam':
+                    false_spam += 1
+                else:
+                    false_ham += 1
+                wrong += 1
+                
+        print("total: ", right + wrong)
+        print("right: ", right)
+        print("wrong: ", wrong)
+        print("false spam: ", false_spam)
+        print("false ham: ", false_ham)
+        print("accuracy: ", right / (right + wrong))
+        print("accuracy: ", "{:.2f}".format(right / (right + wrong) * 100), "%")
+
+
+    def __get_class_for_data_in_out(self, data):
         expected_class_name = data[-1]
         self.total_by_class[expected_class_name] -= 1
         for j in range(len(data) - 1):
@@ -167,27 +195,4 @@ processor = SmsDatasetProcessor(dataset)
 
 # train naive bayes
 naive_bayes = NaiveBayes(processor.processed_dataset)
-
-right = 0
-wrong = 0
-false_spam = 0
-false_ham = 0
-for data in processor.processed_dataset:
-    class_founded = naive_bayes.get_class_for_data_in_out(data)
-    class_name = data[-1]
-    if class_founded == class_name:
-        right += 1
-    else:
-        if class_name == 'spam':
-            false_spam += 1
-        else:
-            false_ham += 1
-        wrong += 1
-        
-print("total: ", right + wrong)
-print("right: ", right)
-print("wrong: ", wrong)
-print("false spam: ", false_spam)
-print("false ham: ", false_ham)
-print("accuracy: ", right / (right + wrong))
-print("accuracy: ", "{:.2f}".format(right / (right + wrong) * 100), "%")
+naive_bayes.get_accuracy()
