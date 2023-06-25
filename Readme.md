@@ -20,19 +20,47 @@ em que cada coluna é um atributo e cada linha seja referente a um SMS, sendo a 
 
 Foi pensado os seguintes atributos:
 
-#Comprimento do texto: Calcule o número de caracteres no SMS. Geralmente, mensagens de spam tendem a ser mais longas do que mensagens normais.
+#### Comprimento do texto
 
-#Número de palavras: Conte o número de palavras presentes no SMS. Isso pode fornecer informações sobre a complexidade e conteúdo da mensagem.
+Calcule o número de caracteres no SMS. Geralmente, mensagens de spam tendem a ser mais longas do que mensagens normais.
 
-#Frequência de palavras-chave: Crie um conjunto de palavras-chave relevantes, como "oferta", "grátis", "ganhe dinheiro" e conte quantas vezes essas palavras-chave aparecem no texto do SMS. Mensagens de spam geralmente contêm essas palavras-chave com mais frequência.
+#### Número de palavras 
 
-#Uso de letras maiúsculas: Determine a proporção de letras maiúsculas em relação ao total de letras no texto do SMS. Mensagens de spam tendem a usar letras maiúsculas excessivas para chamar a atenção.
+Conte o número de palavras presentes no SMS. Isso pode fornecer informações sobre a complexidade e conteúdo da mensagem.
 
-#Presença de números de telefone: Verifique se o SMS contém números de telefone. Muitas mensagens de spam incluem números de telefone para contato ou para direcionar os usuários a ligarem para determinados serviços.
+#### Uso de letras maiúsculas 
 
-#Uso de símbolos ou caracteres especiais: Analise a quantidade de símbolos, caracteres especiais ou emojis presentes no texto do SMS. Mensagens de spam costumam usar esses elementos para atrair a atenção do destinatário.
+Determine a proporção de letras maiúsculas em relação ao total de letras no texto do SMS. Mensagens de spam tendem a usar letras maiúsculas excessivas para chamar a atenção.
 
-#Análise de sentimentos: Realize a análise de sentimentos no texto do SMS para identificar se ele possui uma carga emocional positiva, negativa ou neutra. Isso pode ajudar a identificar padrões de linguagem comuns em mensagens de spam.
+#### Quantidade de números 
+
+#Conte a quantidade de números presentes no SMS. Muitas mensagens de spam incluem números para contato, para direcionar os usuários a ligarem para determinados serviços ou relacionado a valores monetários.
+
+#### Uso de símbolos ou caracteres especiais
+
+Analise a quantidade de símbolos, caracteres especiais ou emojis presentes no texto do SMS. Mensagens de spam costumam usar esses elementos para atrair a atenção do destinatário.
+
+#### Frequência de palavras-chave
+
+Crie um conjunto de palavras-chave relevantes, como "oferta", "grátis", "ganhe dinheiro" e conte quantas vezes essas palavras-chave aparecem no texto do SMS. Mensagens de spam geralmente contêm essas palavras-chave com mais frequência.
+
+Nessa etapa foi utilizado tokenização e remoção de stopwords, exemplo:
+
+```
+sms_text = "I have mastered the ability of standing so incredibly still that I become invisible to the eye"
+```
+
+Após tokenizar e remover stopwords:
+
+```
+['mastered', 'ability', 'standing', 'incredibly', 'still', 'become', 'invisible', 'the', 'eye']
+```
+
+Assim foi pego as 10 mensagns que mais apareciam em spans e salvo elas como palavras chaves.
+
+#### Análise de sentimentos
+
+Realize a análise de sentimentos no texto do SMS para identificar se ele possui uma carga emocional positiva, negativa ou neutra. Isso pode ajudar a identificar padrões de linguagem comuns em mensagens de spam.
 
 ## Instalando as dependências
 
