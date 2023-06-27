@@ -2,6 +2,7 @@ from textblob import TextBlob
 import nltk
 nltk.download('punkt') # tokenizer
 nltk.download('stopwords') # stopwords
+import re
 
 class NaiveBayes:
     compressed_dataset = {}
@@ -89,7 +90,14 @@ class SmsDatasetProcessor:
     key_words = []
     stopwords = []
     def __init__(self, dataset):
-        self.attributes = ["text_length", "number_of_words", "number_of_capital_letters", "number_of_numbers", "number_of_simbols", "number_of_key_words", "sentiment_analysis"]
+        # self.attributes.append("text_length")
+        # self.attributes.append("number_of_words")
+        self.attributes.append("number_of_capital_letters")
+        self.attributes.append("number_of_numbers")
+        # self.attributes.append("number_of_simbols")
+        # self.attributes.append("number_of_key_words")
+        self.attributes.append("sentiment_analysis")
+        self.attributes.append("has_link")
         self.stopwords = nltk.corpus.stopwords.words('english')
         spam_words_count = {}
         for data in dataset:
@@ -102,7 +110,7 @@ class SmsDatasetProcessor:
                         spam_words_count[token] = 1
 
         spam_words_count = sorted(spam_words_count.items(), key=lambda x: x[1], reverse=True)
-        self.key_words = [spam_words_count[i][0] for i in range(10)]
+        self.key_words = [spam_words_count[i][0] for i in range(5)]
 
         for data in dataset:
             self.__add_sms_text(data[0], data[1])
@@ -127,6 +135,10 @@ class SmsDatasetProcessor:
                 self.processed_dataset[idx].append(self.__get_number_of_key_words(sms_text))
             elif attribute == "sentiment_analysis":
                 self.processed_dataset[idx].append(self.__analyze_sentiment(sms_text))
+            elif attribute == "has_link":
+                self.processed_dataset[idx].append(self.__check_for_link(sms_text))
+            elif attribute == "has_phone_number":
+                self.processed_dataset[idx].append(self.__check_for_phone_number(sms_text))
         self.processed_dataset[idx].append(class_name)
 
     def __get_number_of_capital_letters(self, sms_text):
@@ -140,6 +152,14 @@ class SmsDatasetProcessor:
 
     def __get_number_of_simbols(self, sms_text):
         return sum(not (c.isalpha() or c.isdigit()) for c in sms_text)
+
+    def __check_for_link(self, sms_text):
+        pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+        match = re.search(pattern, sms_text)
+        if match:
+            return True
+        else:
+            return False
 
     def __tokenize_and_remove_stopwords(self, sms_text):
         frase = sms_text.lower()
@@ -181,8 +201,27 @@ class SmsDatasetProcessor:
                 self.processed_dataset[i][idx] = 'large'
 
     def __normalize_dataset(self):
-        for i in range(len(self.attributes) - 1):
-            self.__classify_attribute_in_large_medium_or_small(i)
+        for i in range(len(self.attributes)):
+            if self.__attribute_needs_be_normalized(self.attributes[i]):
+                self.__classify_attribute_in_large_medium_or_small(i)
+
+    def __attribute_needs_be_normalized(self, attribute):
+        if attribute == "text_length":
+            return False
+        elif attribute == "number_of_words":
+            return False
+        elif attribute == "number_of_capital_letters":
+            return False
+        elif attribute == "number_of_numbers":
+            return False
+        elif attribute == "number_of_simbols":
+            return False
+        elif attribute == "number_of_key_words":
+            return False
+        elif attribute == "sentiment_analysis":
+            return False
+        elif attribute == "has_link":
+            return False
 
 # read lines untill EOF
 dataset = []

@@ -62,6 +62,9 @@ Assim foi pego as 10 mensagns que mais apareciam em spans e salvo elas como pala
 
 Realize a análise de sentimentos no texto do SMS para identificar se ele possui uma carga emocional positiva, negativa ou neutra. Isso pode ajudar a identificar padrões de linguagem comuns em mensagens de spam.
 
+#### Se tem algum link (True or False)
+Normalmente spams tendem a ter algum link para levar para outra página com mais informações.
+
 ## Instalando as dependências
 
 Para instalar as dependências será necessário python3 e pip3 instalado em sua máquina.
